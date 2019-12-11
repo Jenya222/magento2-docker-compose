@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 LABEL maintainer="Alankrit Srivastava <alankrit.srivastava256@webkul.com>"
 
 RUN apt-get update \
-    && apt-get -y install apache2 nano mysql-client \
+    && apt-get -y install apache2 nano mysql-client curl \
     && a2enmod rewrite \
     && a2enmod headers \
     && export LANG=en_US.UTF-8 \
@@ -26,6 +26,23 @@ env APACHE_RUN_DIR     /var/run/apache2
 env APACHE_LOCK_DIR    /var/lock/apache2
 env APACHE_LOG_DIR     /var/log/apache2
 env LANG               C
+
+
+RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt-get install -y --no-install-recommends nodejs
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt update
+RUN apt install yarn
+
+RUN apt-get install -y php-xdebug \
+    && echo "zend_extension=/usr/lib/php/20160303/xdebug.so" > /etc/php/7.1/mods-available/xdebug.ini \
+    && echo "xdebug.remote_autostart=off" >> /etc/php/7.1/mods-available/xdebug.ini \
+    && echo 'xdebug.remote_port=9000' >> /etc/php/7.1/mods-available/xdebug.ini \
+    && echo 'xdebug.remote_enable=1' >> /etc/php/7.1/mods-available/xdebug.ini \
+    && echo 'xdebug.remote_connect_back=1' >> /etc/php/7.1/mods-available/xdebug.ini
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer
 
 WORKDIR /var/www/html
 
